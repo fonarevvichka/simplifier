@@ -66,8 +66,6 @@ def generate_min_terms(truth_values):
 
     min_terms = []
 
-    print(truth_table)
-    print(truth_values)
     for i in range(0, len(truth_values)):
         if (truth_values[i] == '1'):
             min_terms.append(truth_table[i])
