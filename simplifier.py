@@ -16,7 +16,7 @@ def find_difference(term_one, term_two):
         return -1
 
 
-def check_math(term_one, term_two):
+def check_match(term_one, term_two):
     differences = 0
 
     for i in range(0, len(term_one)):
@@ -60,6 +60,7 @@ def create_truth_table(truth_values):
                                 truth_table.append(str(a % 2) + str(b % 2) + str(c % 2) + str(d % 2) + str(e %2) + str(f % 2))
 
     return truth_table
+
 
 def generate_min_terms(truth_values):
     truth_table = create_truth_table(truth_values)
@@ -112,7 +113,7 @@ def mapping_exists(min_terms, reduced_min_terms):
 
     for i in range(0, len(min_terms)):  # test every min term
         for k in range(0, len(reduced_min_terms)):
-            if check_math(min_terms[i], reduced_min_terms[k]):
+            if check_match(min_terms[i], reduced_min_terms[k]):
                 matches_found += 1
                 break
     return matches_found == len(min_terms)
