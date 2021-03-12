@@ -11,10 +11,10 @@ char** generateAllPossibleMinTerms(int length) {
         int counter = 0;
         for (int a = 0; a < 2; a++) {
             for (int b = 0; b < 2; b++) {
-                char* minTerm = malloc(2 * sizeof(char));
+                char* minTerm = malloc(3);
                 minTerm[0] = a + '0';
                 minTerm[1] = b + '0';
-                // minTerm[2] = '\0';
+                minTerm[2] = '\0';
                 truthTable[counter] = minTerm;
                 counter++;
             }
@@ -25,11 +25,11 @@ char** generateAllPossibleMinTerms(int length) {
         for (int a = 0; a < 2; a++) {
             for (int b = 0; b < 2; b++) {
                 for (int c = 0; c < 2; c++) {
-                    char* minTerm = malloc(3 * sizeof(char));
+                    char* minTerm = malloc(4);
                     minTerm[0] = a + '0';
                     minTerm[1] = b + '0';
                     minTerm[2] = c + '0';
-                    // minTerm[3] = '\0';
+                    minTerm[3] = '\0';
                     truthTable[counter] = minTerm;
                     counter++;
                 }
@@ -42,12 +42,12 @@ char** generateAllPossibleMinTerms(int length) {
             for (int b = 0; b < 2; b++) {
                 for (int c = 0; c < 2; c++) {
                     for (int d = 0; d < 2; d++) {
-                        char* minTerm = malloc(4 * sizeof(char));
+                        char* minTerm = malloc(5);
                         minTerm[0] = a + '0';
                         minTerm[1] = b + '0';
                         minTerm[2] = c + '0';
                         minTerm[3] = d + '0';
-                        // minTerm[4] = '\0';
+                        minTerm[4] = '\0';
                         truthTable[counter] = minTerm;
                         counter++;
                     }
@@ -62,13 +62,13 @@ char** generateAllPossibleMinTerms(int length) {
                 for (int c = 0; c < 2; c++) {
                     for (int d = 0; d < 2; d++) {
                         for (int e = 0; e < 2; e++) {
-                            char* minTerm = malloc(5 * sizeof(char));
+                            char* minTerm = malloc(6);
                             minTerm[0] = a + '0';
                             minTerm[1] = b + '0';
                             minTerm[2] = c + '0';
                             minTerm[3] = d + '0';
                             minTerm[4] = e + '0';
-                            // minTerm[5] = '\0';
+                            minTerm[5] = '\0';
                             truthTable[counter] = minTerm;
                             counter++;
                         }
@@ -85,14 +85,14 @@ char** generateAllPossibleMinTerms(int length) {
                     for (int d = 0; d < 2; d++) {
                         for (int e = 0; e < 2; e++) {
                             for (int f = 0; f < 2; f++) {
-                                char* minTerm = malloc(6 * sizeof(char));
+                                char* minTerm = malloc(7);
                                 minTerm[0] = a + '0';
                                 minTerm[1] = b + '0';
                                 minTerm[2] = c + '0';
                                 minTerm[3] = d + '0';
                                 minTerm[4] = e + '0';
                                 minTerm[5] = f + '0';
-                                // minTerm[6] = '\0';
+                                minTerm[6] = '\0';
                                 truthTable[counter] = minTerm;
                                 counter++;
                             }
@@ -120,7 +120,7 @@ char** getMinTerms(char* truthValues, int length, int minTermLength, int* numMin
 
     char** minTerms = malloc(sizeof(char*) * counter);
     for (int i = 0; i < counter; i++) {
-        minTerms[i] = malloc(sizeof(char) * (minTermLength + 1));
+        minTerms[i] = malloc(minTermLength);
         strncpy(minTerms[i], allPossibleMinTerms[locations[i]], minTermLength);
     }
     for (int i = 0; i < length; i++) {
@@ -162,105 +162,192 @@ int checkMatch(char* termOne, char* termTwo, int minTermLength) {
     return differences == 0;
 }
 
+bool member(char** terms, int length, char* term, int termLength) {
+    for (int i = 0; i < length; i++) {
+        if (strncmp(terms[i], term, termLength) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 char** simplifyLogic(char** minTerms, int numMinTerms, int minTermLength, int* newMinTermsLength) {
-    int matchedMinTermsLength = 0;
-    char** matchedMinTerms = malloc(sizeof(char*) * (numMinTerms * numMinTerms));
+    int     simplifiedTermsLength   = 0;
+    char**  simplifiedTerms         = calloc(sizeof(char*), numMinTerms);
     
-    int simplifiedMinTermsLength = 0;
-    char** simplifiedMinTerms = malloc(sizeof(char*) * numMinTerms);
+    int     soloTermsLength         = 0;
+    char**  soloTerms               = calloc(sizeof(char*), numMinTerms);
     
-    int soloMinTermsLength = 0;
-    char** soloMinTerms = malloc(sizeof(char*) * numMinTerms);
-    
+    int     matchedTermsLength      = 0;
+    char**  matchedTerms            = calloc(sizeof(char*), numMinTerms);
+
     for (int i = 0; i < numMinTerms; i++) {
-        for (int j = i+1; j < numMinTerms; j++) {
-            char* termOne = minTerms[i];
+        bool simplificationFound = false;
+        char* termOne = minTerms[i];
+        for (int j = i + 1; j < numMinTerms; j++) {
             char* termTwo = minTerms[j];
             int differenceIndex = findDifference(termOne, termTwo, minTermLength);
-            if (differenceIndex != -1) {
-                // add simplified term to list
-                char* simplifiedMinTerm = malloc(sizeof(char) * (minTermLength + 1));
-                for (int k = 0; k < minTermLength; k++) {
-                    if (k == differenceIndex) {
-                        simplifiedMinTerm[k] = '-';
-                    } else {
-                        simplifiedMinTerm[k] = termOne[i];
-                    }
-                }
-                simplifiedMinTerm[minTermLength] = '\0';
 
-                bool matchFound = false;
-                for (int k = 0; k < simplifiedMinTermsLength; k++) {
-                    if (strncmp(simplifiedMinTerm, simplifiedMinTerms[k], minTermLength) == 0) {
-                        matchFound = true;
-                        break;
-                    }
-                }
+            if (differenceIndex != -1) { //found a singular difference
+                //--------------- simplify term ---------------//
+                char* simplifiedMinTerm = malloc(minTermLength);
+                strncpy(simplifiedMinTerm, termOne, minTermLength);
+                simplifiedMinTerm[differenceIndex] = '-';
+                //--------------- simplify term ---------------//
 
-                if (!matchFound) {
-                    simplifiedMinTerms[simplifiedMinTermsLength] = simplifiedMinTerm;
-                    simplifiedMinTermsLength++;
-                }
-                // add simplified term to list
+                simplifiedTerms[simplifiedTermsLength++] = simplifiedMinTerm;
 
-                //add original terms to list to avoid duplicates
-                matchedMinTerms[matchedMinTermsLength] = malloc(sizeof(char) * (minTermLength + 1));
-                strncpy(matchedMinTerms[matchedMinTermsLength++], termOne, minTermLength);
-                matchedMinTerms[matchedMinTermsLength] = malloc(sizeof(char) * (minTermLength + 1));
-                strncpy(matchedMinTerms[matchedMinTermsLength++], termTwo, minTermLength);
-                //add original terms to list to avoid duplicates
-            } else {
-                // check if term is already accounted for
-                bool matchFound = false;
-                for (int k = 0; k < matchedMinTermsLength; k++) {
-                    if (strncmp(termOne, matchedMinTerms[k], minTermLength) == 0) {
-                        matchFound = true;
-                        break;
-                    }
+                if (!member(matchedTerms, matchedTermsLength, termOne, minTermLength)) {
+                    char* termCopy = malloc(minTermLength);
+                    strncpy(termCopy, termOne, minTermLength);
+
+                    matchedTerms[matchedTermsLength++]  = termCopy;
+                }
+                
+                if (!member(matchedTerms, matchedTermsLength, termTwo, minTermLength)) {
+                    char* termCopy = malloc(minTermLength);
+                    strncpy(termCopy, termTwo, minTermLength);
+
+                    matchedTerms[matchedTermsLength++]  = termCopy;
                 }
 
-                if (!matchFound) {
-                    soloMinTerms[soloMinTermsLength] = malloc(sizeof(char) * (minTermLength + 1));
-                    strncpy(soloMinTerms[soloMinTermsLength++], termOne, minTermLength);
-                }
+                simplificationFound = true;
+            }
+        }
+        if (!simplificationFound) {
+            if (!member(soloTerms, soloTermsLength, termOne, minTermLength) &&
+                !member(matchedTerms, matchedTermsLength, termOne, minTermLength)) {
+                    char* termCopy = malloc(minTermLength);
+                    strncpy(termCopy, termOne, minTermLength);
+                    soloTerms[soloTermsLength++] = termCopy;
             }
         }
     }
 
-    *newMinTermsLength = soloMinTermsLength + simplifiedMinTermsLength;
-    char** newMinTerms = malloc(sizeof(char*) * *newMinTermsLength);
+    int length = simplifiedTermsLength + soloTermsLength;
+    *newMinTermsLength = length;
+    char** newMinTerms = malloc(sizeof(char*) * length);
 
-    for (int i = 0; i < simplifiedMinTermsLength; i++) {
-        newMinTerms[i] = malloc(sizeof(char) * (minTermLength + 1));
-        strncpy(newMinTerms[i], simplifiedMinTerms[i], minTermLength);
-        // newMinTerms[i] = simplifiedMinTerms[i];
-    }
-    
-    for (int i = 0; i < soloMinTermsLength; i++) {
-        newMinTerms[simplifiedMinTermsLength + i] = malloc(sizeof(char) * (minTermLength + 1));
-        strncpy(newMinTerms[simplifiedMinTermsLength + i], simplifiedMinTerms[i], minTermLength);
-        // newMinTerms[simplifiedMinTermsLength + i] = simplifiedMinTerms[i];
+    // maps simplified terms into new array
+    for (int i = 0; i < simplifiedTermsLength; i++) {
+        newMinTerms[i] = simplifiedTerms[i];
     }
 
+    // maps solo terms into new array
+    for (int i = 0; i < soloTermsLength; i++) {
+        newMinTerms[simplifiedTermsLength + i] = soloTerms[i];
+    }
 
     // Garbage collection
-    for (int i = 0; i < simplifiedMinTermsLength; i++) {
-        free(simplifiedMinTerms[i]);
+    for (int i = 0; i < matchedTermsLength; i++) {
+        free(matchedTerms[i]);
     }
-    free(simplifiedMinTerms);
-    
-    for (int i = 0; i < soloMinTermsLength; i++) {
-        free(soloMinTerms[i]);
-    }
-    free(soloMinTerms);
-    
-    for (int i = 0; i < matchedMinTermsLength; i++) {
-        free(matchedMinTerms[i]);
-    }
-    free(matchedMinTerms);
+    free(matchedTerms);
+    free(simplifiedTerms);
+    free(soloTerms);
 
     return newMinTerms;
 }
+
+// char** simplifyLogicOld(char** minTerms, int numMinTerms, int minTermLength, int* newMinTermsLength) {
+//     int matchedMinTermsLength = 0;
+//     char** matchedMinTerms = malloc(sizeof(char*) * (numMinTerms * numMinTerms));
+    
+//     int simplifiedMinTermsLength = 0;
+//     char** simplifiedMinTerms = malloc(sizeof(char*) * numMinTerms);
+    
+//     int soloMinTermsLength = 0;
+//     char** soloMinTerms = malloc(sizeof(char*) * numMinTerms);
+    
+//     for (int i = 0; i < numMinTerms; i++) {
+//         for (int j = i+1; j < numMinTerms; j++) {
+//             char* termOne = minTerms[i];
+//             char* termTwo = minTerms[j];
+//             int differenceIndex = findDifference(termOne, termTwo, minTermLength);
+//             if (differenceIndex != -1) {
+//                 // add simplified term to list
+//                 char* simplifiedMinTerm = malloc(sizeof(char) * (minTermLength + 1));
+//                 for (int k = 0; k < minTermLength; k++) {
+//                     if (k == differenceIndex) {
+//                         simplifiedMinTerm[k] = '-';
+//                     } else {
+//                         simplifiedMinTerm[k] = termOne[i];
+//                     }
+//                 }
+//                 simplifiedMinTerm[minTermLength] = '\0';
+
+//                 bool matchFound = false;
+//                 for (int k = 0; k < simplifiedMinTermsLength; k++) {
+//                     if (strncmp(simplifiedMinTerm, simplifiedMinTerms[k], minTermLength) == 0) {
+//                         matchFound = true;
+//                         break;
+//                     }
+//                 }
+
+//                 if (!matchFound) {
+//                     simplifiedMinTerms[simplifiedMinTermsLength] = simplifiedMinTerm;
+//                     simplifiedMinTermsLength++;
+//                 }
+//                 // add simplified term to list
+
+//                 //add original terms to list to avoid duplicates
+//                 matchedMinTerms[matchedMinTermsLength] = malloc(sizeof(char) * (minTermLength + 1));
+//                 strncpy(matchedMinTerms[matchedMinTermsLength++], termOne, minTermLength);
+//                 matchedMinTerms[matchedMinTermsLength] = malloc(sizeof(char) * (minTermLength + 1));
+//                 strncpy(matchedMinTerms[matchedMinTermsLength++], termTwo, minTermLength);
+//                 //add original terms to list to avoid duplicates
+//             } else {
+//                 // check if term is already accounted for
+//                 bool matchFound = false;
+//                 for (int k = 0; k < matchedMinTermsLength; k++) {
+//                     if (strncmp(termOne, matchedMinTerms[k], minTermLength) == 0) {
+//                         matchFound = true;
+//                         break;
+//                     }
+//                 }
+
+//                 if (!matchFound) {
+//                     soloMinTerms[soloMinTermsLength] = malloc(sizeof(char) * (minTermLength + 1));
+//                     strncpy(soloMinTerms[soloMinTermsLength++], termOne, minTermLength);
+//                 }
+//             }
+//         }
+//     }
+
+//     *newMinTermsLength = soloMinTermsLength + simplifiedMinTermsLength;
+//     char** newMinTerms = malloc(sizeof(char*) * *newMinTermsLength);
+
+//     for (int i = 0; i < simplifiedMinTermsLength; i++) {
+//         newMinTerms[i] = malloc(sizeof(char) * (minTermLength + 1));
+//         strncpy(newMinTerms[i], simplifiedMinTerms[i], minTermLength);
+//         // newMinTerms[i] = simplifiedMinTerms[i];
+//     }
+    
+//     for (int i = 0; i < soloMinTermsLength; i++) {
+//         newMinTerms[simplifiedMinTermsLength + i] = malloc(sizeof(char) * (minTermLength + 1));
+//         strncpy(newMinTerms[simplifiedMinTermsLength + i], simplifiedMinTerms[i], minTermLength);
+//         // newMinTerms[simplifiedMinTermsLength + i] = simplifiedMinTerms[i];
+//     }
+
+
+//     // Garbage collection
+//     for (int i = 0; i < simplifiedMinTermsLength; i++) {
+//         free(simplifiedMinTerms[i]);
+//     }
+//     free(simplifiedMinTerms);
+    
+//     for (int i = 0; i < soloMinTermsLength; i++) {
+//         free(soloMinTerms[i]);
+//     }
+//     free(soloMinTerms);
+    
+//     for (int i = 0; i < matchedMinTermsLength; i++) {
+//         free(matchedMinTerms[i]);
+//     }
+//     free(matchedMinTerms);
+
+//     return newMinTerms;
+// }
 
 int main(int argc, char *argv[]) {
     int length = 0;
@@ -273,7 +360,7 @@ int main(int argc, char *argv[]) {
     }
 
     int numMinTerms = 0;
-    int minTermLength = (int) log2(length);
+    int minTermLength = (int) log2(length) + 1;
     char** minTerms = getMinTerms(truthValues, length, minTermLength, &numMinTerms);
 
     int newMinTermsLength = 0;
@@ -283,18 +370,22 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
 
-    for (int i = 0; i < newMinTermsLength - 1; i++) {
-        for (int i = 0; i < newMinTermsLength; i++) {
-            free(newMinTerms[i]);
-        }
-        free(newMinTerms);
+
+
+
+
+    // for (int i = 0; i < newMinTermsLength - 1; i++) {
+    //     for (int i = 0; i < newMinTermsLength; i++) {
+    //         free(newMinTerms[i]);
+    //     }
+    //     free(newMinTerms);
         
-        newMinTerms = simplifyLogic(minTerms, numMinTerms, minTermLength, &newMinTermsLength);
-        // for (int i = 0; i < newMinTermsLength; i++) {
-        //     printf("%s, ", newMinTerms[i]);
-        // }
-        // printf("\n");
-    }
+    //     newMinTerms = simplifyLogic(minTerms, numMinTerms, minTermLength, &newMinTermsLength);
+    //     // for (int i = 0; i < newMinTermsLength; i++) {
+    //     //     printf("%s, ", newMinTerms[i]);
+    //     // }
+    //     // printf("\n");
+    // }
 
     
 
