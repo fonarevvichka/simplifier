@@ -170,6 +170,10 @@ int checkMatch(char* termOne, char* termTwo, int minTermLength) {
 bool mappingExists(char** minTerms, int numMinTerms, char** reducedMinTerms, int numReducedMinTerms, int minTermLength) {
     int matchesFound = 0;
 
+    if (numReducedMinTerms == 0) {
+        return false;
+    }
+
     for (int i = 0; i < numMinTerms; i++) {
         for (int j = 0; j < numReducedMinTerms; j++) {
             if (checkMatch(minTerms[i], reducedMinTerms[j], minTermLength)) {
@@ -272,10 +276,13 @@ char** simplifyLogic(char** minTerms, int numMinTerms, int minTermLength, int* n
 }
 
 void printMinTerms(char** terms, int length) {
-    for (int i = 0; i < length - 1; i++) {
-        printf("%s, ", terms[i]);
+    if (length > 0) {
+        for (int i = 0; i < length - 1; i++) {
+            printf("%s, ", terms[i]);
+        }
+
+        printf("%s \n", terms[length-1]);
     }
-    printf("%s \n", terms[length-1]);
 }
 
 
@@ -338,26 +345,17 @@ int main(int argc, char *argv[]) {
         newMinTerms = simplifyLogic(newMinTerms, numNewMinTerms, minTermLength, &numNewMinTerms);
         freeArray(interimTerms, oldLength);
     }
-    
-    // Garbage Collection
-    for (int i = 0; i < numMinTerms; i++) {
-        free(minTerms[i]);
-    }
-    free(minTerms);
-
-    minTerms = newMinTerms;
-    numMinTerms = numNewMinTerms;
-    printMinTerms(minTerms, numMinTerms);
 
     // attempt to remove terms
     struct option** options = calloc(sizeof(struct option*), 1000000000);
     int top = 0;
-    options[top] = newOption(minTerms, numMinTerms);
+    options[top] = newOption(newMinTerms, numNewMinTerms);
     
     struct option* bestOption = malloc(sizeof(struct option));
     bestOption = options[top];
 
-    while (top >= 0) {
+    printMinTerms(minTerms, numMinTerms);
+    while (top >= 0 && bestOption -> length >= 1) {
         struct option* currentOption = options[top--];
         int length = currentOption -> length;
         char** terms = currentOption -> minTerms;
@@ -373,29 +371,40 @@ int main(int argc, char *argv[]) {
             }
             // array of min terms with one ommited //
             
-            if (mappingExists(terms, length, reducedMinTerms, length - 1, minTermLength)) {
+            if (mappingExists(minTerms, numMinTerms, reducedMinTerms, length - 1, minTermLength)) {
                 if (length <= bestOption -> length) {
-                    bestOption = currentOption;
-                    fprintf(stderr, "top: %d \n", top);
-                    options[++top] = currentOption;
+                    struct option* shortnedOption = newOption(reducedMinTerms, length - 1);
+                    bestOption = shortnedOption;
+                    options[++top] = shortnedOption;
                 }
             }
         }
+    }
 
-        // printMinTerms(bestOption -> minTerms, bestOption -> length);
+    for (int i = 0; i < bestOption -> length; i++) {
+        char** finalEquation = bestOption -> minTerms;
+        for (int j = 0; j < minTermLength; j++) {
+            char currChar = finalEquation[i][j];
+            if (currChar == '0') {
+                printf("!%c")
+            } else if (currChar == '1') {
 
+            }
+        }
     }
 
     free(options);
 
-
-    // printMinTerms(reducedMinTerms, numReducedMinTerms);
-
-    
+    // Garbage Collection
     for (int i = 0; i < numMinTerms; i++) {
         free(minTerms[i]);
     }
     free(minTerms);
+
+    for (int i = 0; i < numNewMinTerms; i++) {
+        free(newMinTerms[i]);
+    }
+    free(newMinTerms);
    
     return 0;
 }
