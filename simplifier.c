@@ -330,12 +330,11 @@ int main(int argc, char *argv[]) {
     }
 
     // attempt to remove terms
-    struct option** options = calloc(sizeof(struct option*), 1000000000);
+    struct option** options = calloc(sizeof(struct option*), 65536);
     int top = 0;
     struct option* temp = newOption(newMinTerms, numNewMinTerms);
     options[top] = temp;
     
-    // struct option* bestOption = malloc(sizeof(struct option));
     struct option* bestOption = options[top];
 
     while (top >= 0 && bestOption -> length >= 1) {
