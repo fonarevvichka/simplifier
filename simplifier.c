@@ -354,7 +354,6 @@ int main(int argc, char *argv[]) {
     struct option* bestOption = malloc(sizeof(struct option));
     bestOption = options[top];
 
-    printMinTerms(minTerms, numMinTerms);
     while (top >= 0 && bestOption -> length >= 1) {
         struct option* currentOption = options[top--];
         int length = currentOption -> length;
@@ -380,18 +379,29 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+    char charMap[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
+    char finalOutput[64 * 6 * 5]; // max number of terms * number of vars + negations
+    int finalOutputLength = 0;
 
     for (int i = 0; i < bestOption -> length; i++) {
         char** finalEquation = bestOption -> minTerms;
         for (int j = 0; j < minTermLength; j++) {
             char currChar = finalEquation[i][j];
             if (currChar == '0') {
-                printf("!%c")
+                finalOutput[finalOutputLength++] = '!';
+                finalOutput[finalOutputLength++] = charMap[j];
             } else if (currChar == '1') {
-
+                finalOutput[finalOutputLength++] = charMap[j];
             }
         }
+        if (i != (bestOption -> length - 1)) {
+            finalOutput[finalOutputLength++] = ' ';
+            finalOutput[finalOutputLength++] = '+';
+            finalOutput[finalOutputLength++] = ' ';
+        }
     }
+    finalOutput[finalOutputLength++] = '\0';
+    printf("%s \n", finalOutput);
 
     free(options);
 
