@@ -389,8 +389,13 @@ int main(int argc, char *argv[]) {
     finalOutput[finalOutputLength++] = '\0';
     printf("%s \n", finalOutput);
 
-    free(temp);
-    free(bestOption);
+    if (bestOption == temp) {
+        free(bestOption);
+    } else {
+        free(temp);
+        free(bestOption);
+    }
+
     free(options);
 
     // Garbage Collection
