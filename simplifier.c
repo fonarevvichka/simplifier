@@ -113,7 +113,7 @@ char** generateAllPossibleMinTerms(int length) {
 
 char** getMinTerms(char* truthValues, int length, int minTermLength, int* numMinTerms) {
     int counter = 0;
-    int locations[16]; 
+    int locations[64]; 
     char** allPossibleMinTerms = generateAllPossibleMinTerms(length);
     
     for (int i = 0; i < length; i++) {
@@ -221,6 +221,8 @@ char** simplifyLogic(char** minTerms, int numMinTerms, int minTermLength, int* n
 
                 if (!member(simplifiedTerms, simplifiedTermsLength, simplifiedMinTerm, minTermLength)) {
                     simplifiedTerms[simplifiedTermsLength++] = simplifiedMinTerm;
+                } else {
+                    free(simplifiedMinTerm);
                 }
 
                 if (!member(matchedTerms, matchedTermsLength, termOne, minTermLength)) {
@@ -294,25 +296,6 @@ void freeArray(char** array, int length) {
     array = NULL;
 }
 
-// char** reduceMinTerms(char** minTerms, int numMinTerms, char** reducedMinTerms, int minTermLength, int* numReducedMinTerms) {
-//     int numReducedTerms = numMinTerms - 1;
-//     if (mappingExists(minTerms, numMinTerms, reducedMinTerms, numMinTerms - 1, minTermLength)) {
-//         *numReducedMinTerms = numMinTerms - 1;
-//         reduceMinTerms(reducedMinTerms, numMinTerms - 1, minTermLength, numReducedMinTerms);
-//     } else {
-//         return minTerms;
-//     }
-// }
-
-int factorial(int n) {
-    if (n == 1) {
-        return 1;
-    }
-
-    return n * factorial(n-1);
-}
-
-
 struct option* newOption(char** minTerms, int length) {
     struct option* instance = malloc(sizeof(struct option));
     instance -> length = length;
@@ -349,10 +332,11 @@ int main(int argc, char *argv[]) {
     // attempt to remove terms
     struct option** options = calloc(sizeof(struct option*), 1000000000);
     int top = 0;
-    options[top] = newOption(newMinTerms, numNewMinTerms);
+    struct option* temp = newOption(newMinTerms, numNewMinTerms);
+    options[top] = temp;
     
-    struct option* bestOption = malloc(sizeof(struct option));
-    bestOption = options[top];
+    // struct option* bestOption = malloc(sizeof(struct option));
+    struct option* bestOption = options[top];
 
     while (top >= 0 && bestOption -> length >= 1) {
         struct option* currentOption = options[top--];
@@ -361,7 +345,7 @@ int main(int argc, char *argv[]) {
 
         for (int i = 0; i < length; i++) {
             // array of min terms with one ommited //
-            char** reducedMinTerms = calloc(sizeof(char*), length - 1);
+            char* reducedMinTerms[64];
             int currIndex = 0;
             for (int j = 0; j < length; j++) {
                 if (j != i) {
@@ -379,8 +363,9 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+    
     char charMap[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
-    char finalOutput[64 * 6 * 5]; // max number of terms * number of vars + negations
+    char finalOutput[(64 * 3) + (64 * 6 * 2)]; // max number of terms * number of vars + negations
     int finalOutputLength = 0;
 
     for (int i = 0; i < bestOption -> length; i++) {
@@ -400,9 +385,12 @@ int main(int argc, char *argv[]) {
             finalOutput[finalOutputLength++] = ' ';
         }
     }
+
     finalOutput[finalOutputLength++] = '\0';
     printf("%s \n", finalOutput);
 
+    free(temp);
+    free(bestOption);
     free(options);
 
     // Garbage Collection
